@@ -120,7 +120,11 @@ http://127.0.0.1:8000
 
 ## 📸 Demo
 
-(Add screenshot of your UI here — VERY IMPORTANT for recruiters)
+### 🧾 Enter Text for Moderation
+![Input](assets/input.png)
+
+### ⚠️ Toxicity Detection Result
+![Output](assets/output.png)
 
 ---
 
