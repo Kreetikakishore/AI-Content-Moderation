@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Content Moderation Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;500;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0d0d0d;
+      color: #e8e8e8;
+      font-family: 'IBM Plex Sans', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 48px 24px;
+    }
+    header { text-align: center; margin-bottom: 48px; }
+    header h1 {
+      font-size: 2rem;
+      font-family: 'IBM Plex Mono', monospace;
+      color: #fff;
+    }
+    header p { color: #666; font-size: 0.9rem; margin-top: 6px; }
+    .card {
+      background: #161616;
+      border: 1px solid #2a2a2a;
+      border-radius: 12px;
+      padding: 32px;
+      width: 100%;
+      max-width: 640px;
+      margin-bottom: 24px;
+    }
+    textarea {
+      width: 100%;
+      background: #111;
+      color: #e8e8e8;
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 16px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.9rem;
+      resize: vertical;
+      min-height: 120px;
+      outline: none;
+    }
+    button {
+      margin-top: 16px;
+      width: 100%;
+      padding: 14px;
+      background: #fff;
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+    }
+    button:disabled { opacity: 0.4; cursor: not-allowed; }
+    .result { display: none; }
+    .result.visible { display: block; }
+    .verdict {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 1.6rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+    .verdict.safe { color: #4ade80; }
+    .verdict.low { color: #facc15; }
+    .verdict.medium { color: #fb923c; }
+    .verdict.high { color: #f87171; }
+    .score-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: #888;
+      margin-bottom: 8px;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+    .score-bar {
+      height: 8px;
+      background: #222;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+    .score-fill { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
+    .fill-safe { background: #4ade80; }
+    .fill-low { background: #facc15; }
+    .fill-medium { background: #fb923c; }
+    .fill-high { background: #f87171; }
+    .tags { display: flex; gap: 8px; flex-wrap: wrap; }
+    .tag {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.75rem;
+      padding: 4px 10px;
+      border-radius: 4px;
+      background: #1f1f1f;
+      border: 1px solid #333;
+      color: #aaa;
+    }
+    .error { color: #f87171; font-size: 0.85rem; margin-top: 12px; font-family: 'IBM Plex Mono', monospace; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>// content_moderator</h1>
+    <p>AI-powered toxicity detection · NLP · Social Media Trust & Safety</p>
+  </header>
+
+  <div class="card">
+    <textarea id="inputText" placeholder="Paste a comment or message to analyze..."></textarea>
+    <button id="analyzeBtn" onclick="analyze()">ANALYZE →</button>
+    <div id="error" class="error"></div>
+  </div>
+
+  <div class="card result" id="result">
+    <div class="verdict" id="verdictLabel">SAFE</div>
+    <div class="score-label">
+      <span>TOXICITY SCORE</span>
+      <span id="scoreText">0%</span>
+    </div>
+    <div class="score-bar">
+      <div class="score-fill" id="scoreFill" style="width: 0%"></div>
+    </div>
+    <div class="tags">
+      <span class="tag" id="tagSeverity">severity: safe</span>
+      <span class="tag">model: logistic regression</span>
+      <span class="tag">features: tfidf bigrams</span>
+    </div>
+  </div>
+
+  <script>
+    async function analyze() {
+      const text = document.getElementById("inputText").value.trim();
+      const btn = document.getElementById("analyzeBtn");
+      const errorEl = document.getElementById("error");
+      const resultEl = document.getElementById("result");
+      errorEl.textContent = "";
+
+      if (!text) { errorEl.textContent = "// please enter some text"; return; }
+
+      btn.disabled = true;
+      btn.textContent = "ANALYZING...";
+
+      try {
+        const res = await fetch("http://127.0.0.1:8000/analyze", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text })
+        });
+        const data = await res.json();
+
+        const label = document.getElementById("verdictLabel");
+        const fill = document.getElementById("scoreFill");
+        const scoreText = document.getElementById("scoreText");
+        const tagSeverity = document.getElementById("tagSeverity");
+
+        const sev = data.severity;
+        label.className = `verdict ${sev}`;
+        label.textContent = data.is_toxic ? `⚠ ${sev.toUpperCase()} TOXICITY` : "✓ SAFE";
+
+        fill.className = `score-fill fill-${sev}`;
+        fill.style.width = data.toxic_score + "%";
+        scoreText.textContent = data.toxic_score + "%";
+        tagSeverity.textContent = `severity: ${sev}`;
+
+        resultEl.classList.add("visible");
+      } catch (e) {
+        errorEl.textContent = "// error: make sure the API server is running";
+      }
+
+      btn.disabled = false;
+      btn.textContent = "ANALYZE →";
+    }
+  </script>
+</body>
+</html>
