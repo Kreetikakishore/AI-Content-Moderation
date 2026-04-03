@@ -124,7 +124,7 @@ http://127.0.0.1:8000
 ![Input](https://github.com/Kreetikakishore/AI-Content-Moderation/blob/ae33e9d50765522d95d8019b4c4dfaf96046277e/Screenshot%202026-04-03%20205247.png)
 
 ### ⚠️ Toxicity Detection Result
-![Output](assets/output.png)
+![Output](https://github.com/Kreetikakishore/AI-Content-Moderation/blob/0ad707eca3b1d634057b91e872f14df05ea57f6d/Screenshot%202026-04-03%20205259.png)
 
 ---
 
