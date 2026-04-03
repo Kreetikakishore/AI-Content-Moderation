@@ -121,7 +121,7 @@ http://127.0.0.1:8000
 ## 📸 Demo
 
 ### 🧾 Enter Text for Moderation
-![Input](assets/input.png)
+![Input](https://github.com/Kreetikakishore/AI-Content-Moderation/blob/ae33e9d50765522d95d8019b4c4dfaf96046277e/Screenshot%202026-04-03%20205247.png)
 
 ### ⚠️ Toxicity Detection Result
 ![Output](assets/output.png)
